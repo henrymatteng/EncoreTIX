@@ -1,0 +1,16 @@
+﻿@page "/"
+@inject NavigationManager Navigation
+
+<div class="splash">
+    <img src="images/logo.png" alt="EncoreTIX Logo" />
+</div>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        Console.WriteLine("Splash screen loaded");
+        await Task.Delay(2000); // 2 seconds
+        Console.WriteLine("Attempting Navigation");
+        await InvokeAsync(() => Navigation.NavigateTo("/search"));
+    }
+}

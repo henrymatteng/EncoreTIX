@@ -1,0 +1,21 @@
+﻿@using EncoreTIX.Models
+
+<div class="attraction-card">
+    <div class="attraction-info">
+        <img src="@((Attraction?.Images?.FirstOrDefault()?.Url) ?? "images/placeholder.png")"
+             alt="@Attraction?.Name"
+             class="attraction-image" />
+        <div class="attraction-name">@Attraction?.Name</div>
+    </div>
+    <button class="select-button" @onclick="() => OnSelect.InvokeAsync(Attraction)">
+        Select
+    </button>
+</div>
+
+@code {
+    [Parameter]
+    public Attraction Attraction { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback<Attraction> OnSelect { get; set; }
+}

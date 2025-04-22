@@ -1,0 +1,88 @@
+﻿@page "/search"
+@namespace EncoreTIX.Components.Pages
+
+@using EncoreTIX.Components.Shared
+@using EncoreTIX.Services.IServices
+@using EncoreTIX.Models
+
+@inject ITicketmasterService TicketmasterService
+
+<Header />
+
+<div class="search-section">
+
+    <div class="search-bar-container">
+        <div class="search-input-wrapper">
+            <img src="icons/search.png" class="search-icon" alt="Search Icon" />
+            <input class="search-input" type="text" placeholder="Search for Attractions"
+                   @bind="SearchTerm" @bind:event="oninput" />
+        </div>
+
+        <button class="search-button" @onclick="SearchAttractions" disabled="@IsLoading">
+            @if (IsLoading)
+            {
+                <span>Searching...</span>
+            }
+            else
+            {
+                <span>Submit</span>
+            }
+        </button>
+    </div>
+
+
+    @if (!IsLoading && Attractions?.Count == 0)
+    {
+        <div class="no-results">
+            <img src="images/sad.png" alt="No Results" class="no-results-icon" />
+            <h3>No Results Found</h3>
+        </div>
+    }
+
+    @if (!IsLoading && Attractions != null && Attractions.Count > 0)
+    {
+        <div class="attractions-list">
+            @foreach (var attraction in Attractions)
+            {
+                <AttractionCard Attraction="attraction" OnSelect="HandleSelect" />
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private string SearchTerm = "Phish";
+    private List<Attraction>? Attractions;
+    private bool IsLoading = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Console.WriteLine("Search screen loaded");
+        await SearchAttractions();
+    }
+
+    private async Task SearchAttractions()
+    {
+        IsLoading = true;
+
+        try
+        {
+            Attractions = await TicketmasterService.SearchAttractionsAsync(SearchTerm);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Search failed: {ex.Message}");
+            Attractions = new List<Attraction>();
+        }
+
+        IsLoading = false;
+        StateHasChanged();
+    }
+
+    private void HandleSelect(Attraction attraction)
+    {
+        Navigation?.NavigateTo($"/attraction/{attraction.Id}");
+    }
+
+    [Inject] private NavigationManager? Navigation { get; set; }
+}

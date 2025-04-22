@@ -1,0 +1,98 @@
+﻿@page "/attraction/{AttractionId}"
+
+@using EncoreTIX.Models
+@using EncoreTIX.Services.IServices
+@using EncoreTIX.Components.Shared
+
+@inject ITicketmasterService TicketmasterService
+@inject NavigationManager Navigation
+
+<Header />
+
+@if (IsLoading)
+{
+        <p class="no-results">Loading...</p>
+}
+else if (Attraction == null)
+{
+        <p class="no-results">Attraction not found.</p>
+}
+else
+{
+        <img src="@GetImage()" class="detail-image" alt="@Attraction.Name" />
+
+        <div class="detail-header-with-icons">
+            <span>@Attraction.Name</span>
+
+        @if (Attraction.ExternalLinks != null)
+        {
+                    <div class="inline-icons">
+                @if (Attraction.ExternalLinks?.YouTube?.FirstOrDefault()?.Url is string youtubeUrl)
+                {
+                <a href="@youtubeUrl" title="YouTube">
+                    <img src="icons/youtube.svg" alt="YouTube" />
+                </a>
+                }
+
+                @if (Attraction.ExternalLinks?.Spotify?.FirstOrDefault()?.Url is string spotifyUrl)
+                {
+                <a href="@spotifyUrl" title="Spotify">
+                    <img src="icons/spotify.svg" alt="Spotify" />
+                </a>
+                }
+                @if (Attraction.ExternalLinks?.Twitter?.FirstOrDefault()?.Url is string twitterUrl)
+                {
+                <a href="@twitterUrl" title="Twitter">
+                    <img src="icons/twitter.svg" alt="Twitter" />
+                </a>
+                }
+                @if (Attraction.ExternalLinks?.Homepage?.FirstOrDefault()?.Url is string websiteUrl)
+                {
+                <a href="@websiteUrl"  title="Website">
+                    <img src="icons/website.svg" alt="Website" />
+                </a>
+                }
+
+                    </div>
+        }
+        </div>
+
+    @if (Events?.Count > 0)
+    {
+        @foreach (var evt in Events)
+        {
+                <div class="event-card">
+                @if (evt.Images?.FirstOrDefault()?.Url is string eventImageUrl)
+                {
+                            <img src="@eventImageUrl" alt="@evt.Name" class="event-thumbnail" />
+                }
+                    <h4>@evt.Name</h4>
+                    <p>@evt.Dates?.Start?.LocalDate @evt.Dates?.Start?.LocalTime</p>
+                    <p>@evt._embedded?.Venues?.FirstOrDefault()?.Name</p>
+                </div>
+        }
+    }
+    else
+    {
+                <p class="no-results">No upcoming events.</p>
+    }
+}
+
+@code {
+    [Parameter] public string AttractionId { get; set; } = string.Empty;
+    private Attraction? Attraction;
+    private List<Event>? Events;
+    private bool IsLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Attraction = await TicketmasterService.GetAttractionDetailsAsync(AttractionId);
+        Events = await TicketmasterService.GetAttractionEventsAsync(AttractionId);
+        IsLoading = false;
+    }
+
+    private string GetImage()
+    {
+        return Attraction?.Images?.FirstOrDefault()?.Url ?? "images/placeholder.png";
+    }
+}
